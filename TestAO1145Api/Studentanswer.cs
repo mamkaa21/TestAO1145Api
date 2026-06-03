@@ -13,9 +13,13 @@ public partial class Studentanswer
 
     public DateTime? DateTime { get; set; }
 
+    public int? IdMark { get; set; }
+
+    public virtual Mark? IdMarkNavigation { get; set; }
+
     public virtual Student? IdStudentNavigation { get; set; }
 
     public virtual Test? IdTestNavigation { get; set; }
 
-    public List<Aswer> Answers { get; set; } = new();
+    public virtual ICollection<Testcrossquestion> Testcrossquestions { get; set; } = new List<Testcrossquestion>();
 }

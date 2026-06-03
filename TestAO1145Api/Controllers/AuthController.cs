@@ -31,7 +31,7 @@ namespace TestAO1145Api.Controllers
         [HttpPost("CheckAccountIsExist")] //все работает 
         public async Task<ActionResult> CheckAccountIsExist(Student Student) //добавить проверку еще на роль - если рольID = 1, это админ, если рольID = 2 -> это юзер
         {
-            var newUser = new Student { Id = Student.Id, Age = Student.Age, Classes = Student.Classes, FirstName = Student.FirstName, LastName = Student.LastName, IdClass = Student.IdClass, 
+            var newUser = new Student { Id = Student.Id, Age = Student.Age, FirstName = Student.FirstName, LastName = Student.LastName, IdClass = Student.IdClass, 
             Login = Student.Login, Password = Student.Password};
             if (string.IsNullOrEmpty(newUser.Login) || string.IsNullOrEmpty(newUser.Password))
                 return BadRequest("Логин или пароль не иожет быть пустым");

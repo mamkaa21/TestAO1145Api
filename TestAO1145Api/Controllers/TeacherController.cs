@@ -15,105 +15,56 @@ namespace TestAO1145Api.Controllers
             this.context = context;
         }
 
-        [HttpPost("CreateTests")]
-        public async Task<ActionResult> CreateTests([FromBody] CreateTestDto dto)
+        [HttpPost("AddTest")] //создание test реально добавил ахуеть
+        public async Task<ActionResult<Test>> AddTest(TModel test)
         {
-            if (dto == null) return BadRequest();
-
-            // 1. Создаем объект теста
-            var newTest = new Test
+            var t = new Test // сначала просто делаем "пустой" тест где будет айди (для дальнейшего создания вопросов) и просто название. в впф дальше используем метод AddQ
             {
-                Name = dto.Name,
-                IdSubject = dto.SubjectId,
-                IdTeacher = dto.TeacherId
+                Id = test.Id,
+                Name = test.Name,
+                CountQuestionTest = test.CountQuestionTest,
+                IdSubject = test.IdSubject, //выбираем из комбобокса
+                IdTeacher = test.IdTeacher,//выбираем из комбобокса
+                //IdMark = test.IdMark
             };
-
-            // Начинаем транзакцию, чтобы если один вопрос не сохранился, то и тест не создался
-            using var transaction = await context.Database.BeginTransactionAsync();
-
-            try
-            {
-                context.Tests.Add(newTest);
-                await context.SaveChangesAsync(); // Сохраняем, чтобы получить ID теста
-
-                // 2. Проходим по всем вопросам из DTO
-                foreach (var qDto in dto.Questions)
-                {
-                    var question = new Question
-                    {
-                        Name = qDto.Text
-                    };
-
-                    // Связываем вопрос с этим тестом                 
-                    question.Tests.Add(newTest);
-
-                    context.Questions.Add(question);
-                    await context.SaveChangesAsync(); // Получаем ID вопроса
-
-                    // 3. Добавляем варианты ответов к этому вопросу
-                    foreach (var ansText in qDto.Answers)
-                    {
-                        var answer = new Aswer
-                        {
-                            Text = ansText,
-                            IdQuestion = question.Id
-                        };
-                        context.Aswers.Add(answer);
-                    }
-                }
-
-                await context.SaveChangesAsync();
-                await transaction.CommitAsync(); // Подтверждаем изменения в БД
-
-                return Ok(new { message = "Тест успешно создан!", testId = newTest.Id });
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync(); // Если ошибка — откатываем всё назад
-                return BadRequest($"Ошибка при создании теста: {ex.Message}");
-            }
-
-            //    try
-            //    {
-            //        var goodNew = new Good
-            //        {
-            //            Title = good.Title,
-            //            CategoryId = good.CategoryId,
-            //            Price = good.Price,
-            //            Amount = good.Amount,
-            //            Description = good.Description,
-            //            Image = good.Image,
-            //            Rating = good.Rating
-            //        };
-            //        context.Goods.Add(goodNew);
-            //        await context.SaveChangesAsync();
-            //        return Ok("Успешно");
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        return BadRequest(ex.Message);
-            //    }
+            context.Tests.Add(t);
+            await context.SaveChangesAsync();
+            return Ok("Новый класс добавлен");
         }
 
+        [HttpPost("AddQ")] //создание voprosa сразу с ответами РАБОТАЕТ
+        public async Task<ActionResult<QModel>> AddQ(QModel question)
+        {
+            context.Questions.Add((Question)question);
+            await context.SaveChangesAsync();
+            return Ok("Новый класс добавлен");
+        }
 
+        [HttpGet("GetAllTest")] //ok
+        public async Task<List<TModel>> GetAllTest()
+        {
+            var tests = await context.Tests.Select(s=>(TModel)s).ToListAsync();
+            return tests;
 
+           
+        }
+ //подсчет оценки, вывод результатов, 
 
-       
-
-     
+        [HttpGet("GetTestWithQ")] //РАБОТАЕТ
+        public async Task<List<QModel>> GetTestWithQ(int id)
+        {
+            var Q = await context.Questions.Include(s => s.Answers).Where(s => s.IdTest == id).Select(s => (QModel)s).ToListAsync();
+            var test = await context.Tests.FirstOrDefaultAsync(s => s.Id == id);
+            if(Q.Count < test.CountQuestionTest) 
+                return Q;
+            else
+            {
+                Random random = new Random();
+                return Q.OrderBy(s=>random.NextDouble() > 0.5).Take(test.CountQuestionTest.Value).ToList();
+            } 
+                
+            //подсчет оценки, вывод результатов, 
+        }
     }
-}
-public class CreateTestDto
-{
-    public string Name { get; set; } = string.Empty;
-    public int SubjectId { get; set; }
-    public int TeacherId { get; set; }
-    public List<QuestionDto> Questions { get; set; } = new();
-}
-
-public class QuestionDto
-{
-    public string Text { get; set; } = string.Empty;
-    public List<string> Answers { get; set; } = new(); // Список вариантов ответов
 }
 

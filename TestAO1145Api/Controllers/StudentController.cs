@@ -25,65 +25,30 @@ namespace TestAO1145Api.Controllers
             return Ok(context.Students);
         }
 
-        [HttpGet("GetTests")] //сомнтельно
-        public async Task<List<Test>> GetTests()
+
+        [HttpGet("GetAllTest")] //ok
+        public async Task<List<TModel>> GetAllTest()
         {
-            await Task.Delay(10);
-            var goods = context.Tests.Include(s => s.IdTeacherNavigation).ToList();
-            return goods;
+            var tests = await context.Tests.Select(s => (TModel)s).ToListAsync();
+            return tests;
         }
 
+        //подсчет оценки, вывод результатов, 
 
-        [HttpPost("submit")] //ебать как сомнтельно . оттпрака теста хз 
-        public async Task<IActionResult> SubmitTest([FromBody] SubmitTestDto dto)
+        [HttpGet("GetTestWithQ")] //РАБОТАЕТ
+        public async Task<List<QModel>> GetTestWithQ(int id)
         {
-            if (dto == null) return BadRequest("Данные не получены");
-
-            // 1. Проверяем существование студента и теста
-            var studentExists = await context.Students.AnyAsync(s => s.Id == dto.StudentId);
-            var test = await context.Tests.FindAsync(dto.TestId);
-
-            if (!studentExists || test == null)
+            var Q = await context.Questions.Include(s => s.Answers).Where(s => s.IdTest == id).Select(s => (QModel)s).ToListAsync();
+            var test = await context.Tests.FirstOrDefaultAsync(s => s.Id == id);
+            if (Q.Count < test.CountQuestionTest)
+                return Q;
+            else
             {
-                return NotFound("Студент или Тест не найдены в базе");
+                Random random = new Random();
+                return Q.OrderBy(s => random.NextDouble() > 0.5).Take(test.CountQuestionTest.Value).ToList();
             }
 
-            // 2. Создаем объект результата
-            var result = new Studentanswer
-            {
-                IdStudent = dto.StudentId,
-                IdTest = dto.TestId,
-                DateTime = DateTime.Now,
-                Answers = dto.Answers.Select(a => new Aswer
-                {
-                    IdQuestion = a.QuestionId,
-                    Text = a.SelectedText
-                }).ToList()
-            };
-
-            // 3. Сохраняем в базу данных
-            try
-            {
-                context.Add(result);
-                await context.SaveChangesAsync();
-
-                return Ok(new
-                {
-                    Message = "Тест успешно отправлен!",
-                    SubmissionId = result.Id
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Ошибка при сохранении: {ex.Message}");
-            }
-        }
-
-        [HttpGet("all")]
-        public async Task<IActionResult> GetAllResults()
-        {
-            var results = await context.Tests.Include(navigationPropertyPath: s => s.IdQuestionNavigation.Aswers).ToListAsync();
-            return Ok(results);
+            //подсчет оценки, вывод результатов, 
         }
 
         [HttpPut("SaveChangedByStudentWin")]
@@ -100,6 +65,45 @@ namespace TestAO1145Api.Controllers
                 return BadRequest(ex);
             }
         }
+
+        [HttpPost("PostStAns")] //работает
+        public async Task<ActionResult<StAModel>> PostStAns (StAModel sta)
+        {
+            
+            var ast = await context.Students.FirstOrDefaultAsync(s => s.Id == sta.IdStudent); //наш студент в профиле
+            var test = await context.Tests.FirstOrDefaultAsync(s => s.Id == sta.IdTest); // нахождение теста на который отвечает студент
+            if (ast == null || test == null)
+                return BadRequest();
+
+
+            var studentanswer = (Studentanswer)sta;
+
+            int rightCount = 0;
+            var questions = studentanswer.Testcrossquestions.GroupBy(s => s.IdQuestion).Select(g => g.Key); 
+            foreach (var q in questions) // перебираем правильные ответы из ответов студента в правильных ответах теста
+            {
+                var right = context.Answers.Where(s => s.IdQuestion == q && s.RightAnswer.Value).Select(s=>s.Id).ToList();
+                var answers = studentanswer.Testcrossquestions.Where(s => s.IdQuestion == q).Select(s=>s.IdAnswer).ToList();
+                if (right.Count != answers.Count)
+                    continue;
+                answers.RemoveAll(s => right.Contains(s));
+                if (answers.Count != 0)
+                    continue;
+
+                rightCount++;
+            }
+            var percent = ((float)rightCount / test.CountQuestionTest) * 100; //вычисляе м оценку
+
+            var mark = context.Marks.First(s=>s.CountQ <= percent);
+            studentanswer.IdMark = mark.Id;
+
+            context.Studentanswers.Add(studentanswer);
+            await context.SaveChangesAsync();
+            var model = (StAModel)studentanswer;
+            model.Mark = mark.Number;// перобразовываем оценку в нормальный вид
+            return Ok(model);
+        }
+
     }
 
 }

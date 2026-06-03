@@ -15,9 +15,10 @@ namespace TestAO1145Api.Controllers
             this.context = context;
 
         }
+        //изменения для всех добавить 
 
         [HttpPost("AddNewTeacher")] //создание учителей все ок 
-        public async Task<ActionResult<Teacher>> AddNewTeacher(TeaModel teacher)
+        public async Task<ActionResult<Teacher>> AddNewTeacher(TeacherModel teacher)
         {
             var newTeacher = new Teacher
             {
@@ -26,7 +27,6 @@ namespace TestAO1145Api.Controllers
                 LastName = teacher.LastName,
                 Login = teacher.Login,
                 Password = teacher.Password,
-                IdClass = teacher.IdClass,
             };
             context.Teachers.Add(newTeacher);
             await context.SaveChangesAsync();
@@ -57,7 +57,6 @@ namespace TestAO1145Api.Controllers
             {
                 Id = clas.Id,
                 Number = clas.Number,
-                IdStudent = clas.IdStudent,
                 IdTeacher = clas.IdTeacher
             };
             context.Classes.Add(newClass);

@@ -9,7 +9,11 @@ public partial class Question
 
     public string? Name { get; set; }
 
-    public virtual ICollection<Aswer> Aswers { get; set; } = new List<Aswer>();
+    public int? IdTest { get; set; }
 
-    public virtual ICollection<Test> Tests { get; set; } = new List<Test>();
+    public virtual ICollection<Answer> Answers { get; set; } = new List<Answer>();
+
+    public virtual Test? IdTestNavigation { get; set; }
+
+    public virtual ICollection<Testcrossquestion> Testcrossquestions { get; set; } = new List<Testcrossquestion>();
 }
