@@ -52,7 +52,7 @@ namespace TestAO1145Api.Controllers
         }
  //подсчет оценки, вывод результатов, 
 
-        [HttpGet("GetTestWithQ")] //РАБОТАЕТ
+        [HttpGet("GetTestWithQ")] //РАБОТАЕТ это в тествин 
         public async Task<List<QModel>> GetTestWithQ(int id)
         {
             var Q = await context.Questions.Include(s => s.Answers).Where(s => s.IdTest == id).Select(s => (QModel)s).ToListAsync();
