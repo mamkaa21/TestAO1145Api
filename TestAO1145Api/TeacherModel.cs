@@ -8,9 +8,9 @@
         public string Login { get;  set; }
         public string Password { get; set; }
 
-        public static explicit operator Teacher(TeacherModel teacher)
+        public static explicit operator TeacherModel(Teacher teacher)
         {
-            return new Teacher 
+            return new TeacherModel
             { Id = teacher.Id, 
                 FirstName = teacher.FirstName, 
                 LastName = teacher.LastName, 

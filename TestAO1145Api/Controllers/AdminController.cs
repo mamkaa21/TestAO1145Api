@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace TestAO1145Api.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class AdminController : ControllerBase
@@ -35,7 +35,7 @@ namespace TestAO1145Api.Controllers
             return Ok("Новый учитель добавлен");
         }
         [HttpPost("AddNewStudent")] //ok
-        public async Task<ActionResult> AddNewStudent(Student student)
+        public async Task<ActionResult> AddNewStudent(StModel student)
         {
             var newStudent = new Student { Id = student.Id, FirstName = student.FirstName, LastName = student.LastName, Login = student.Login, Password = student.Password, Age = student.Age,
             IdClass = student.IdClass};
@@ -51,7 +51,6 @@ namespace TestAO1145Api.Controllers
             else
                 return BadRequest("Такой аккаунт уже существует");
         }
-
         [HttpPost("AddClass")] //создание класса все ок 
         public async Task<ActionResult<Class>> Addclass(ClModel clas)
         {
@@ -65,7 +64,6 @@ namespace TestAO1145Api.Controllers
             await context.SaveChangesAsync();
             return Ok("Новый класс добавлен");
         }
-
         [HttpPost("AddSubject")] //создание ПРЕДМЕТ А все ок 
         public async Task<ActionResult<Subject>> AddSubject(Subject subject)
         {
@@ -77,6 +75,13 @@ namespace TestAO1145Api.Controllers
             context.Subjects.Add(newSubject);
             await context.SaveChangesAsync();
             return Ok("Новый класс добавлен");
+        }
+
+        [HttpGet("GetAllTeacher")] //ok
+        public async Task<List<TeacherModel>> GetAllTeacher()
+        {
+            var teachers = await context.Teachers.Select(s => (TeacherModel)s).ToListAsync();
+            return teachers;
         }
     }
 }

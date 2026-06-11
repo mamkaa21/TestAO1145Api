@@ -45,7 +45,7 @@ namespace TestAO1145Api.Controllers
         [HttpGet("GetAllTest")] //ok
         public async Task<List<TModel>> GetAllTest()
         {
-            var tests = await context.Tests.Select(s=>(TModel)s).ToListAsync();
+            var tests = await context.Tests.Include(s => s.IdTeacherNavigation).Select(s=>(TModel)s).ToListAsync();
             return tests;
 
            

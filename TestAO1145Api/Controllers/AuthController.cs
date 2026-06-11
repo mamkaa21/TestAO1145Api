@@ -29,7 +29,7 @@ namespace TestAO1145Api.Controllers
                 new SymmetricSecurityKey(Encoding.UTF8.GetBytes(KEY));
         }
         [HttpPost("CheckAccountIsExist")] //все работает 
-        public async Task<ActionResult> CheckAccountIsExist(Student Student) //добавить проверку еще на роль - если рольID = 1, это админ, если рольID = 2 -> это юзер
+        public async Task<ActionResult> CheckAccountIsExist(StModel Student) //добавить проверку еще на роль - если рольID = 1, это админ, если рольID = 2 -> это юзер
         {
             var newUser = new Student { Id = Student.Id, Age = Student.Age, FirstName = Student.FirstName, LastName = Student.LastName, IdClass = Student.IdClass, 
             Login = Student.Login, Password = Student.Password};
@@ -38,32 +38,45 @@ namespace TestAO1145Api.Controllers
 
             var user = await context.Students.FirstOrDefaultAsync(s => s.Login == newUser.Login);
             if (user == null)
-                return NotFound("Неверный логин");
+            {
+                var prepod = await context.Teachers.FirstOrDefaultAsync(s => s.Login == newUser.Login);
+                if (prepod == null)
+                    return NotFound("Неверный логин");
+                else
+                {
+                    if (newUser.Password != prepod.Password)
+                    {
+                        return NotFound("Неверный пароль");
+                    }
+                    user = new Student { Id = prepod.Id, IdClass = 2 };
+                }
+            }
             else
             {
                 if (newUser.Password != user.Password)
                 {
                     return NotFound("Неверный пароль");
                 }
-                else
-                {
-                    int id = user.Id;
+                user.IdClass = 1;
+            }
 
-                    var claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.NameIdentifier, id.ToString()),
-                    };
-                    var jwt = new JwtSecurityToken(
-                    issuer: AuthOptions.ISSUER,
-                    audience: AuthOptions.AUDIENCE,
-                    //кладём полезную нагрузку
-                    claims: claims,
-                    //устанавливаем время жизни токена 2 минуты
-                    expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(20)),
-                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+            int id = user.Id;
 
-                    string token = new JwtSecurityTokenHandler().WriteToken(jwt);
-                    return Ok(token);
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+            };
+            var jwt = new JwtSecurityToken(
+            issuer: AuthOptions.ISSUER,
+            audience: AuthOptions.AUDIENCE,
+            //кладём полезную нагрузку
+            claims: claims,
+            //устанавливаем время жизни токена 2 минуты
+            expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(20)),
+            signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+
+            string token = new JwtSecurityTokenHandler().WriteToken(jwt);
+            return Ok(new string[] { user.IdClass.ToString(), token });
                     //return Ok(new ResponceTokenAndEmployee
                     //{
                     //    Token = token,
@@ -71,8 +84,6 @@ namespace TestAO1145Api.Controllers
                     //    Employee = user
                     //});
                     // return Ok((UserModel) user);
-                }
-            }
         }
     }
 }

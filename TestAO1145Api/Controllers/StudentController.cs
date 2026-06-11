@@ -21,17 +21,17 @@ namespace TestAO1145Api.Controllers
         }
 
         [HttpGet] //ОЧЕНЬ сомнително
-        public async Task<ActionResult<Student>> GetUserData()
+        public async Task<ActionResult<StModel>> GetUserData()
         {
             var id = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            return Ok(context.Students);
+            return Ok((StModel)context.Students.Include(s=>s.IdClassNavigation).FirstOrDefault(s=>s.Id == id));
         }
 
 
         [HttpGet("GetAllTest")] //ok
         public async Task<List<TModel>> GetAllTest()
         {
-            var tests = await context.Tests.Select(s => (TModel)s).ToListAsync();
+            var tests = await context.Tests.Include(s=>s.IdTeacherNavigation).Select(s => (TModel)s).ToListAsync();
             return tests;
         }
 
@@ -54,11 +54,12 @@ namespace TestAO1145Api.Controllers
         }
 
         [HttpPut("SaveChangedByStudentWin")]
-        public async Task<ActionResult> SaveChangedByUserWin(Student student)
+        public async Task<ActionResult> SaveChangedByUserWin(StModel student)
         {
             try
             {
-                context.Students.Update(student);
+                var origin = context.Students.FirstOrDefault(s => s.Id == student.Id);
+                context.Entry(origin).CurrentValues.SetValues((Student)student);
                 await context.SaveChangesAsync();
                 return Ok("Успешно");
             }
