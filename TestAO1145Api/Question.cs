@@ -11,6 +11,8 @@ public partial class Question
 
     public int? IdTest { get; set; }
 
+    public int? Type { get; set; }
+
     public virtual ICollection<Answer> Answers { get; set; } = new List<Answer>();
 
     public virtual Test? IdTestNavigation { get; set; }

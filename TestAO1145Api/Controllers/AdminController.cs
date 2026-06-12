@@ -15,7 +15,6 @@ namespace TestAO1145Api.Controllers
         public AdminController(Testao1145Context context)
         {
             this.context = context;
-
         }
         //изменения для всех добавить 
 
@@ -83,5 +82,24 @@ namespace TestAO1145Api.Controllers
             var teachers = await context.Teachers.Select(s => (TeacherModel)s).ToListAsync();
             return teachers;
         }
+        [HttpGet("GetAllStudent")] //ok
+        public async Task<List<StModel>> GetAllStudent()
+        {
+            var st = await context.Students.Include(s => s.IdClassNavigation).Select(s => (StModel)s).ToListAsync();
+            return st;
+        }
+        [HttpGet("GetAllSubject")] //ok
+        public async Task<List<Subject>> GetAllSubject()
+        {
+            var subj = await context.Subjects.ToListAsync();
+            return subj;
+        }
+        [HttpGet("GetAllClass")] //ok
+        public async Task<List<ClModel>> GetAllClass()
+        {
+            var clas = await context.Classes.Select(s => (ClModel)s).ToListAsync();
+            return clas;
+        }
+
     }
 }

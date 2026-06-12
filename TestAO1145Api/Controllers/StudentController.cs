@@ -20,13 +20,12 @@ namespace TestAO1145Api.Controllers
             this.context = context;
         }
 
-        [HttpGet] //ОЧЕНЬ сомнително
+        [HttpGet] //okо
         public async Task<ActionResult<StModel>> GetUserData()
         {
             var id = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             return Ok((StModel)context.Students.Include(s=>s.IdClassNavigation).FirstOrDefault(s=>s.Id == id));
         }
-
 
         [HttpGet("GetAllTest")] //ok
         public async Task<List<TModel>> GetAllTest()
@@ -36,7 +35,6 @@ namespace TestAO1145Api.Controllers
         }
 
         //подсчет оценки, вывод результатов, 
-
         [HttpGet("GetTestWithQ")] //РАБОТАЕТ
         public async Task<List<QModel>> GetTestWithQ(int id)
         {
@@ -48,9 +46,7 @@ namespace TestAO1145Api.Controllers
             {
                 Random random = new Random();
                 return Q.OrderBy(s => random.NextDouble() > 0.5).Take(test.CountQuestionTest.Value).ToList();
-            }
-
-            //подсчет оценки, вывод результатов, 
+            }           
         }
 
         [HttpPut("SaveChangedByStudentWin")]
@@ -78,9 +74,7 @@ namespace TestAO1145Api.Controllers
             if (ast == null || test == null)
                 return BadRequest();
 
-
             var studentanswer = (Studentanswer)sta;
-
             int rightCount = 0;
             var questions = studentanswer.Testcrossquestions.GroupBy(s => s.IdQuestion).Select(g => g.Key); 
             foreach (var q in questions) // перебираем правильные ответы из ответов студента в правильных ответах теста
@@ -92,22 +86,17 @@ namespace TestAO1145Api.Controllers
                 answers.RemoveAll(s => right.Contains(s));
                 if (answers.Count != 0)
                     continue;
-
                 rightCount++;
             }
             var percent = ((float)rightCount / test.CountQuestionTest) * 100; //вычисляе м оценку
-
             var mark = context.Marks.First(s=>s.CountQ <= percent);
             studentanswer.IdMark = mark.Id;
-
             context.Studentanswers.Add(studentanswer);
             await context.SaveChangesAsync();
             var model = (StAModel)studentanswer;
             model.Mark = mark.Number;// перобразовываем оценку в нормальный вид
             return Ok(model);
         }
-
     }
-
 }
 

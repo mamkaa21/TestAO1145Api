@@ -1,4 +1,6 @@
-﻿namespace TestAO1145Api;
+﻿using static System.Net.Mime.MediaTypeNames;
+
+namespace TestAO1145Api;
 
 public class StModel
 {
@@ -34,16 +36,9 @@ public class StModel
 
     public static explicit operator StModel(Student stud)
     {
-        return new StModel
-        {
-            Age = stud.Age,
-            FirstName = stud.FirstName,
-            Id = stud.Id,
-            IdClass = stud.IdClass,
-            LastName = stud.LastName,
-            Login = stud.Login,
-            Password = stud.Password,
-            Class = stud.IdClassNavigation?.Number
-        };
+        var result = new StModel { Id = stud.Id, FirstName = stud.FirstName, LastName = stud.LastName, Login = stud.Login, Password = stud.Password, Age = stud.Age, IdClass = stud.IdClass };
+        if (stud.IdClassNavigation != null)
+            result.Class = stud.IdClassNavigation.Number;
+        return result;
     }
 }

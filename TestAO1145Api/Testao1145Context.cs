@@ -16,6 +16,8 @@ public partial class Testao1145Context : DbContext
     {
     }
 
+    public virtual DbSet<Admin> Admins { get; set; }
+
     public virtual DbSet<Answer> Answers { get; set; }
 
     public virtual DbSet<Class> Classes { get; set; }
@@ -38,21 +40,30 @@ public partial class Testao1145Context : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=192.168.200.13;user=student;password=student;database=testao1145", Microsoft.EntityFrameworkCore.ServerVersion.Parse("10.3.39-mariadb")); //"server=192.168.200.13;user=student;password=student;database=testao1145"
+        => optionsBuilder.UseMySql("server=127.0.0.1;user=root;database=testao1145", Microsoft.EntityFrameworkCore.ServerVersion.Parse("5.7.33-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
-            .UseCollation("utf8mb4_general_ci")
+            .UseCollation("utf8mb4_unicode_ci")
             .HasCharSet("utf8mb4");
+
+        modelBuilder.Entity<Admin>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("admin");
+
+            entity.Property(e => e.Id).HasColumnType("int(11)");
+            entity.Property(e => e.Login).HasMaxLength(255);
+            entity.Property(e => e.Password).HasMaxLength(255);
+        });
 
         modelBuilder.Entity<Answer>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity
-                .ToTable("answer")
-                .UseCollation("utf8mb4_unicode_ci");
+            entity.ToTable("answer");
 
             entity.HasIndex(e => e.IdQuestion, "FK_answer_question_Id");
 
@@ -73,9 +84,7 @@ public partial class Testao1145Context : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity
-                .ToTable("class")
-                .UseCollation("utf8mb4_unicode_ci");
+            entity.ToTable("class");
 
             entity.HasIndex(e => e.IdTeacher, "FK_class_teacher_Id");
 
@@ -94,9 +103,7 @@ public partial class Testao1145Context : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity
-                .ToTable("mark")
-                .UseCollation("utf8mb4_unicode_ci");
+            entity.ToTable("mark");
 
             entity.Property(e => e.Id).HasColumnType("int(11)");
             entity.Property(e => e.CountQ).HasColumnType("int(11)");
@@ -107,9 +114,7 @@ public partial class Testao1145Context : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity
-                .ToTable("question")
-                .UseCollation("utf8mb4_unicode_ci");
+            entity.ToTable("question");
 
             entity.HasIndex(e => e.IdTest, "FK_question_test_Id");
 
@@ -118,6 +123,7 @@ public partial class Testao1145Context : DbContext
                 .HasColumnType("int(11)")
                 .HasColumnName("Id_Test");
             entity.Property(e => e.Name).HasMaxLength(50);
+            entity.Property(e => e.Type).HasColumnType("int(11)");
 
             entity.HasOne(d => d.IdTestNavigation).WithMany(p => p.Questions)
                 .HasForeignKey(d => d.IdTest)
@@ -128,9 +134,7 @@ public partial class Testao1145Context : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity
-                .ToTable("student")
-                .UseCollation("utf8mb4_unicode_ci");
+            entity.ToTable("student");
 
             entity.HasIndex(e => e.IdClass, "FK_student_class_Id");
 
@@ -155,9 +159,7 @@ public partial class Testao1145Context : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity
-                .ToTable("studentanswer")
-                .UseCollation("utf8mb4_unicode_ci");
+            entity.ToTable("studentanswer");
 
             entity.HasIndex(e => e.IdMark, "FK_studentanswer_mark_Id");
 
@@ -194,9 +196,7 @@ public partial class Testao1145Context : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity
-                .ToTable("subject")
-                .UseCollation("utf8mb4_unicode_ci");
+            entity.ToTable("subject");
 
             entity.Property(e => e.Id).HasColumnType("int(11)");
             entity.Property(e => e.Name).HasMaxLength(50);
@@ -206,9 +206,7 @@ public partial class Testao1145Context : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity
-                .ToTable("teacher")
-                .UseCollation("utf8mb4_unicode_ci");
+            entity.ToTable("teacher");
 
             entity.HasIndex(e => e.Id, "UK_teacher_Id").IsUnique();
 
@@ -234,11 +232,8 @@ public partial class Testao1145Context : DbContext
                         j.HasKey("IdTeacher", "IdSubject")
                             .HasName("PRIMARY")
                             .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
-                        j
-                            .ToTable("teachercrosssubject")
-                            .UseCollation("utf8mb4_unicode_ci");
+                        j.ToTable("teachercrosssubject");
                         j.HasIndex(new[] { "IdSubject" }, "FK_teachercrosssubject_subject_Id");
-                        j.HasIndex(new[] { "IdTeacher" }, "FK_teachercrosssubject_teacher_Id");
                         j.IndexerProperty<int>("IdTeacher")
                             .HasColumnType("int(11)")
                             .HasColumnName("Id_Teacher");
@@ -252,9 +247,7 @@ public partial class Testao1145Context : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity
-                .ToTable("test")
-                .UseCollation("utf8mb4_unicode_ci");
+            entity.ToTable("test");
 
             entity.HasIndex(e => e.IdSubject, "FK_test_subject_Id");
 
@@ -285,9 +278,7 @@ public partial class Testao1145Context : DbContext
                 .HasName("PRIMARY")
                 .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0, 0 });
 
-            entity
-                .ToTable("testcrossquestion")
-                .UseCollation("utf8mb4_unicode_ci");
+            entity.ToTable("testcrossquestion");
 
             entity.HasIndex(e => e.IdAnswer, "FK_testcrossquestion_answer_Id");
 
