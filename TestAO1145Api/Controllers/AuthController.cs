@@ -41,7 +41,20 @@ namespace TestAO1145Api.Controllers
             {
                 var prepod = await context.Teachers.FirstOrDefaultAsync(s => s.Login == newUser.Login);
                 if (prepod == null)
+                {
+                    var admin = await context.Admins.FirstOrDefaultAsync(s => s.Login == newUser.Login);
+                    if (admin == null)
                     return NotFound("Неверный логин");
+
+                else
+                {
+                    if (newUser.Password != admin.Password)
+                    {
+                        return NotFound("Неверный пароль");
+                    }
+                    user = new Student { Id = admin.Id, IdClass = 3};
+                }
+                }                
                 else
                 {
                     if (newUser.Password != prepod.Password)
@@ -49,7 +62,7 @@ namespace TestAO1145Api.Controllers
                         return NotFound("Неверный пароль");
                     }
                     user = new Student { Id = prepod.Id, IdClass = 2 };
-                }
+                }  
             }
             else
             {
