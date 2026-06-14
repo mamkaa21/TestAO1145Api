@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace TestAO1145Api.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TeacherController : ControllerBase
