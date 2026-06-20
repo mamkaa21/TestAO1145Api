@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 
 namespace TestAO1145Api.Controllers
 {
@@ -31,10 +32,20 @@ namespace TestAO1145Api.Controllers
         [HttpPost("CheckAccountIsExist")] //все работает 
         public async Task<ActionResult> CheckAccountIsExist(StModel Student) //добавить проверку еще на роль - если рольID = 1, это админ, если рольID = 2 -> это юзер
         {
-            var newUser = new Student { Id = Student.Id, Age = Student.Age, FirstName = Student.FirstName, LastName = Student.LastName, IdClass = Student.IdClass, 
-            Login = Student.Login, Password = Student.Password};
+            var newUser = new Student
+            {
+                Id = Student.Id,
+                Age = Student.Age,
+                FirstName = Student.FirstName,
+                LastName = Student.LastName,
+                IdClass = Student.IdClass,
+                Login = Student.Login,
+                Password = Student.Password
+            };
             if (string.IsNullOrEmpty(newUser.Login) || string.IsNullOrEmpty(newUser.Password))
                 return BadRequest("Логин или пароль не иожет быть пустым");
+
+            string userJson = null;
 
             var user = await context.Students.FirstOrDefaultAsync(s => s.Login == newUser.Login);
             if (user == null)
@@ -44,25 +55,26 @@ namespace TestAO1145Api.Controllers
                 {
                     var admin = await context.Admins.FirstOrDefaultAsync(s => s.Login == newUser.Login);
                     if (admin == null)
-                    return NotFound("Неверный логин");
-
-                else
-                {
-                    if (newUser.Password != admin.Password)
+                        return NotFound("Неверный логин");
+                    else
                     {
-                        return NotFound("Неверный пароль");
+                        if (newUser.Password != admin.Password)
+                        {
+                            return NotFound("Неверный пароль");
+                        }
+                        user = new Student { Id = admin.Id, IdClass = 3, FirstName = "Администратор" };
+                        userJson = JsonSerializer.Serialize(user);
                     }
-                    user = new Student { Id = admin.Id, IdClass = 3};
                 }
-                }                
                 else
                 {
                     if (newUser.Password != prepod.Password)
                     {
                         return NotFound("Неверный пароль");
                     }
-                    user = new Student { Id = prepod.Id, IdClass = 2 };
-                }  
+                    user = new Student { Id = prepod.Id, IdClass = 2, FirstName = prepod.FirstName, LastName = prepod.LastName };
+                    userJson = JsonSerializer.Serialize(user);
+                }
             }
             else
             {
@@ -71,6 +83,7 @@ namespace TestAO1145Api.Controllers
                     return NotFound("Неверный пароль");
                 }
                 user.IdClass = 1;
+                userJson = JsonSerializer.Serialize(user);
             }
 
             int id = user.Id;
@@ -89,14 +102,14 @@ namespace TestAO1145Api.Controllers
             signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
 
             string token = new JwtSecurityTokenHandler().WriteToken(jwt);
-            return Ok(new string[] { user.IdClass.ToString(), token });
-                    //return Ok(new ResponceTokenAndEmployee
-                    //{
-                    //    Token = token,
-                    //    Role = role,
-                    //    Employee = user
-                    //});
-                    // return Ok((UserModel) user);
+            return Ok(new string[] { user.IdClass.ToString(), token, userJson });
+            //return Ok(new ResponceTokenAndEmployee
+            //{
+            //    Token = token,
+            //    Role = role,
+            //    Employee = user
+            //});
+            // return Ok((UserModel) user);
         }
     }
 }

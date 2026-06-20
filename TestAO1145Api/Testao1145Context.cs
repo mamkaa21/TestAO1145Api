@@ -40,7 +40,8 @@ public partial class Testao1145Context : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=127.0.0.1;user=root;database=testao1145", Microsoft.EntityFrameworkCore.ServerVersion.Parse("5.7.33-mysql"));
+        => optionsBuilder.UseMySql("server= 192.168.200.13; user=student;password=student;database=testao1145", Microsoft.EntityFrameworkCore.ServerVersion.Parse("5.7.33-mysql"));
+    //"server=127.0.0.1;user=root;database=testao1145", 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

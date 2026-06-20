@@ -11,6 +11,10 @@
         public DateTime? DateTime { get; set; }
 
         public int? Mark { get; set; }
+
+        public string? Name { get; set; }
+        public string? StudentName { get; set; }
+        public string? StudentLastName { get; set; }
         public virtual ICollection<TCrossQ> Testcrossquestions { get; set; } = new List<TCrossQ>();
 
         public static explicit operator Studentanswer(StAModel model)
@@ -23,7 +27,6 @@
                 DateTime = model.DateTime,
                 IdMark  = model.Mark,
                 Testcrossquestions = model.Testcrossquestions.Select(s => (Testcrossquestion)s).ToList()
-
             };
         }
 
@@ -36,8 +39,10 @@
                 IdTest = model.IdTest,
                 DateTime = model.DateTime,
                 Mark = model.IdMark,
-                Testcrossquestions = model.Testcrossquestions.Select(s => (TCrossQ)s).ToList()
-
+                Testcrossquestions = model.Testcrossquestions.Select(s => (TCrossQ)s).ToList(),
+                Name = model.IdTestNavigation.Name,
+                StudentName = model.IdStudentNavigation?.FirstName,
+                StudentLastName = model.IdStudentNavigation?.LastName
             };
         }
     }

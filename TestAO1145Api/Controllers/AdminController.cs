@@ -21,18 +21,42 @@ namespace TestAO1145Api.Controllers
         [HttpPost("AddNewTeacher")] //создание учителей все ок 
         public async Task<ActionResult<Teacher>> AddNewTeacher(TeacherModel teacher)
         {
-            var newTeacher = new Teacher
+            try
             {
-                Id = teacher.Id,
-                FirstName = teacher.FirstName,
-                LastName = teacher.LastName,
-                Login = teacher.Login,
-                Password = teacher.Password,
-            };
-            context.Teachers.Add(newTeacher);
-            await context.SaveChangesAsync();
+                var newTeacher = (Teacher)teacher;
+                context.Teachers.Add(newTeacher);
+                foreach (var sub in newTeacher.IdSubjects)
+                context.Entry(sub).State = EntityState.Unchanged;
+                await context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            { 
+                return BadRequest(ex.Message);
+            }
             return Ok("Новый учитель добавлен");
         }
+
+        [HttpPut("SaveChangedByTeacher")]
+        public async Task<ActionResult> SaveChangedByTeacher(TeacherModel teacher)
+        {
+            try
+            {
+                var origin = context.Teachers.Include(s=>s.IdSubjects).FirstOrDefault(s => s.Id == teacher.Id);
+                if (origin == null)
+                    return BadRequest("Учитель не найден");
+                origin.IdSubjects.Clear();
+                origin.IdSubjects = teacher.subject.Select(s => (Subject)s).ToList();
+                context.Entry(origin).CurrentValues.SetValues((Teacher)teacher);
+                await context.SaveChangesAsync();
+                return Ok("Успешно");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+       
+
         [HttpPost("AddNewStudent")] //ok
         public async Task<ActionResult> AddNewStudent(StModel student)
         {
@@ -50,8 +74,23 @@ namespace TestAO1145Api.Controllers
             else
                 return BadRequest("Такой аккаунт уже существует");
         }
+        [HttpPut("SaveChangedByStudent")]
+        public async Task<ActionResult> SaveChangedByStudent(StModel student)
+        {
+            try
+            {
+                var origin = context.Students.FirstOrDefault(s => s.Id == student.Id);
+                context.Entry(origin).CurrentValues.SetValues((Student)student);
+                await context.SaveChangesAsync();
+                return Ok("Успешно");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
         [HttpPost("AddClass")] //создание класса все ок 
-        public async Task<ActionResult<Class>> Addclass(ClModel clas)
+        public async Task<ActionResult> Addclass(ClModel clas)
         {
             var newClass = new Class
             {
@@ -63,8 +102,23 @@ namespace TestAO1145Api.Controllers
             await context.SaveChangesAsync();
             return Ok("Новый класс добавлен");
         }
+        [HttpPut("SaveChangedByClass")]
+        public async Task<ActionResult> SaveChangedByClass(ClModel clas)
+        {
+            try
+            {
+                var origin = context.Students.FirstOrDefault(s => s.Id == clas.Id);
+                context.Entry(origin).CurrentValues.SetValues((Class)clas);
+                await context.SaveChangesAsync();
+                return Ok("Успешно");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
         [HttpPost("AddSubject")] //создание ПРЕДМЕТ А все ок 
-        public async Task<ActionResult<Subject>> AddSubject(Subject subject)
+        public async Task<ActionResult> AddSubject(SubModel subject)
         {
             var newSubject = new Subject
             {
@@ -75,11 +129,26 @@ namespace TestAO1145Api.Controllers
             await context.SaveChangesAsync();
             return Ok("Новый класс добавлен");
         }
+        [HttpPut("SaveChangedBySubject")]
+        public async Task<ActionResult> SaveChangedBySubject(SubModel subject)
+        {
+            try
+            {
+                var origin = context.Students.FirstOrDefault(s => s.Id == subject.Id);
+                context.Entry(origin).CurrentValues.SetValues((Subject)subject);
+                await context.SaveChangesAsync();
+                return Ok("Успешно");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
 
         [HttpGet("GetAllTeacher")] //ok
         public async Task<List<TeacherModel>> GetAllTeacher()
         {
-            var teachers = await context.Teachers.Select(s => (TeacherModel)s).ToListAsync();
+            var teachers = await context.Teachers.Include(s=>s.IdSubjects).Select(s => (TeacherModel)s).ToListAsync();
             return teachers;
         }
         [HttpGet("GetAllStudent")] //ok
@@ -89,10 +158,10 @@ namespace TestAO1145Api.Controllers
             return st;
         }
         [HttpGet("GetAllSubject")] //ok
-        public async Task<List<Subject>> GetAllSubject()
+        public async Task<List<SubModel>> GetAllSubject()
         {
             var subj = await context.Subjects.ToListAsync();
-            return subj;
+            return subj.Select(s => (SubModel)s).ToList(); ; 
         }
         [HttpGet("GetAllClass")] //ok
         public async Task<List<ClModel>> GetAllClass()

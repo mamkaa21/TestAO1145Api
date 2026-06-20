@@ -9,23 +9,33 @@ namespace TestAO1145Api
         public string LastName { get;  set; }
         public string Login { get;  set; }
         public string Password { get; set; }
-        public List<Subject> subject { get; set; }
-        //public virtual ICollection<Class> Classes { get; set; } = new List<Class>();
+        public List<SubModel> subject { get; set; }
 
-        //public virtual ICollection<Test> Tests { get; set; } = new List<Test>();
-
-        public virtual ICollection<Subject> IdSubjects { get; set; } = new List<Subject>();
 
         public static explicit operator TeacherModel(Teacher teacher)
         {
-            return new TeacherModel
+            var result = new TeacherModel
             {
                 Id = teacher.Id,
                 FirstName = teacher.FirstName,
                 LastName = teacher.LastName,
                 Login = teacher.Login,
-                Password = teacher.Password
-
+                Password = teacher.Password,
+                subject = teacher.IdSubjects.Select(s => (SubModel)s).ToList()
+            }; 
+            return result;
+        }
+       
+        public static explicit operator Teacher(TeacherModel teacher)
+        {
+            return new Teacher
+            {
+                Id = teacher.Id,
+                FirstName = teacher.FirstName,
+                LastName = teacher.LastName,
+                Login = teacher.Login,
+                Password = teacher.Password,
+                IdSubjects = teacher.subject.Select(s => (Subject)s).ToList()
             };
 
  
