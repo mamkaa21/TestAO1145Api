@@ -16,7 +16,7 @@ namespace TestAO1145Api.Controllers
         {
             this.context = context;
         }
-        //изменения для всех добавить 
+        //продумать удаление
 
         [HttpPost("AddNewTeacher")] //создание учителей все ок 
         public async Task<ActionResult<Teacher>> AddNewTeacher(TeacherModel teacher)
@@ -35,6 +35,42 @@ namespace TestAO1145Api.Controllers
             }
             return Ok("Новый учитель добавлен");
         }
+
+
+        //[HttpPost("DeleteTeacher")]
+        //public async Task<ActionResult> DeleteTeacher(TeacherModel teacher)
+        //{
+        //    try
+        //    {
+        //        if (context.Tests.FirstOrDefault(s => s.IdTeacher == teacher) != null)
+        //            return BadRequest("Нельзя уволить учителя, пока активны его тесты!!");
+
+        //        var findTeacher = await context.Teachers.FirstOrDefaultAsync(s => s.Id == teacher);
+        //        if (findTeacher == null)
+        //            return BadRequest("Не найден учителя");
+        //        context.Teachers.Remove(findTeacher);
+        //        await context.SaveChangesAsync();
+        //        return Ok("Успешно");
+        //        var find = await context.Teachers.FirstOrDefaultAsync(s => s.Id == teacher.Id);
+        //        if (find == null)
+        //            return BadRequest("Нет такого учителя");
+
+
+        //        var newTeacher = (Teacher)teacher;
+        //        context.Entry(find).CurrentValues.SetValues(newTeacher);
+        //        if (newTeacher.Tests != null)
+        //            context.Teachers.Remove(newTeacher);
+        //        else
+        //            return BadRequest("Нельзя уволить учителя, пока активны его тесты!!");
+        //        await context.SaveChangesAsync();
+        //        return Ok("Успешно");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex);
+        //    }
+        //}
+
 
         [HttpPut("SaveChangedByTeacher")]
         public async Task<ActionResult> SaveChangedByTeacher(TeacherModel teacher)
