@@ -27,21 +27,12 @@ namespace TestAO1145Api.Controllers
             return Ok((StModel)context.Students.Include(s => s.IdClassNavigation).FirstOrDefault(s => s.Id == id));
         }
 
-        //[HttpGet("GetAllTestForOneSt")] // no ok
-        //public async Task<ActionResult<TModel>> GetAllTestForOneSt()
-        //{
-        //    //var ast = await context.Students.FirstOrDefaultAsync(s => s.Id == sta.IdStudent); //наш студент в профиле
-        //    //var tests = await context.Tests.Include(s => s.IdTeacherNavigation).FirstOrDefaultAsync(s=>s.Id == sta.IdTest).Select(s => (TModel)s).ToListAsync();
-        //    //return tests;
-        //}
-
+       
         [HttpGet("GetAllTest")] //ok переделать под теты только для опреджеленного препода
         public async Task<List<TModel>> GetAllTest()
         {
             var tests = await context.Tests.Include(s=>s.IdSubjectNavigation).Include(s => s.IdTeacherNavigation).Select(s => (TModel)s).ToListAsync();
             return tests;
-
-
         }
         //подсчет оценки, вывод результатов, 
         [HttpGet("GetTestWithQ")] //РАБОТАЕТ

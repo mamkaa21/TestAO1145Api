@@ -18,6 +18,13 @@ namespace TestAO1145Api.Controllers
             this.context = context;
         }
 
+        [HttpGet] //okо
+        public async Task<ActionResult<TeacherModel>> GetUserData()
+        {
+            var id = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            return Ok((TeacherModel)context.Teachers.Include(s=>s.IdSubjects).FirstOrDefault(s => s.Id == id));
+        }
+
         [HttpPost("AddTest")] //создание test реально добавил ахуеть
         public async Task<ActionResult> AddTest([FromBody]TModel test)
         {
@@ -110,7 +117,7 @@ namespace TestAO1145Api.Controllers
         {
             var prepod = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             var tests = await context.Subjects.Include(s=>s.IdTeachers).Where(s => s.IdTeachers.FirstOrDefault(s => s.Id == prepod) != null).ToListAsync();
-            return tests.Select(s=>(SubModel)s);
+            return tests.Select(s=>(SubModel)s).ToList();
         }
 
         [HttpGet("GetTestWithQ")] //РАБОТАЕТ

@@ -15,6 +15,8 @@
         public string? Name { get; set; }
         public string? StudentName { get; set; }
         public string? StudentLastName { get; set; }
+        public string? TeacherLastName { get; set; }
+        public string? Test { get; set; }
         public virtual ICollection<TCrossQ> Testcrossquestions { get; set; } = new List<TCrossQ>();
 
         public static explicit operator Studentanswer(StAModel model)
@@ -42,7 +44,8 @@
                 Testcrossquestions = model.Testcrossquestions.Select(s => (TCrossQ)s).ToList(),
                 Name = model.IdTestNavigation.Name,
                 StudentName = model.IdStudentNavigation?.FirstName,
-                StudentLastName = model.IdStudentNavigation?.LastName
+                StudentLastName = model.IdStudentNavigation?.LastName,
+                Test = model.IdTestNavigation.Name
             };
         }
     }
