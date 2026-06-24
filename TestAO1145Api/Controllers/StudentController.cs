@@ -91,7 +91,7 @@ namespace TestAO1145Api.Controllers
                 rightCount++;
             }
             var percent = ((float)rightCount / test.CountQuestionTest) * 100; //вычисляе м оценку
-            var mark = context.Marks.First(s => s.CountQ <= percent);
+            var mark = context.Marks.First(s => s.CountQ >= percent);
             studentanswer.IdMark = mark.Id;
             context.Studentanswers.Add(studentanswer);
             await context.SaveChangesAsync();
