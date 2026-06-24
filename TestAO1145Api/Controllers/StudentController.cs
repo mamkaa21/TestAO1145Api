@@ -64,6 +64,14 @@ namespace TestAO1145Api.Controllers
                 return BadRequest(ex);
             }
         }
+        [HttpGet("GetResults")] //тесты на гл меню препода уловно последние 5 штук
+        public async Task<List<StAModel>> GetResults()
+        {
+            var st = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var results = await context.Studentanswers.Include(s => s.IdTestNavigation.IdTeacherNavigation).Include(s => s.IdTestNavigation).Include(s => s.IdMarkNavigation).Where(s => s.IdStudent == st).ToListAsync();
+
+            return results.Select(s => (StAModel)s).ToList();
+        }
 
         [HttpPost("PostStAns")] //работает
         public async Task<ActionResult<StAModel>> PostStAns(StAModel sta)
